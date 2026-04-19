@@ -333,11 +333,149 @@ function AllTable({ rows, totalBuyScore }) {
   );
 }
 
+// ─── Call Switch Component ───────────────────────────────────────────────────
+function CallSwitchSection({ switches }) {
+  if (!switches || switches.length === 0) return (
+    <div style={{ background: "#fff", border: "0.5px solid #e5e7eb", borderRadius: 10, padding: 16, marginBottom: 16 }}>
+      <div style={{ fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "#9ca3af", marginBottom: 12 }}>Call Switch</div>
+      <div style={{ fontSize: 13, color: "#9ca3af", textAlign: "center", padding: "20px 0" }}>No call changes since yesterday</div>
+    </div>
+  );
+
+  const arrowMap = {
+    "BUY→SELL":  { arrow: "→", from: "#15803d", to: "#b91c1c", bg: "#fff1f2", border: "#fecaca", label: "Exited" },
+    "SELL→BUY":  { arrow: "→", from: "#b91c1c", to: "#15803d", bg: "#f0fdf4", border: "#bbf7d0", label: "New Buy" },
+    "BUY→HOLD":  { arrow: "→", from: "#15803d", to: "#b45309", bg: "#fffbeb", border: "#fde68a", label: "Downgraded" },
+    "HOLD→BUY":  { arrow: "→", from: "#b45309", to: "#15803d", bg: "#f0fdf4", border: "#bbf7d0", label: "Upgraded" },
+    "BUY→WAIT":  { arrow: "→", from: "#15803d", to: "#4338ca", bg: "#eef2ff", border: "#c7d2fe", label: "Caution" },
+    "WAIT→BUY":  { arrow: "→", from: "#4338ca", to: "#15803d", bg: "#f0fdf4", border: "#bbf7d0", label: "Upgraded" },
+    "SELL→HOLD": { arrow: "→", from: "#b91c1c", to: "#b45309", bg: "#fffbeb", border: "#fde68a", label: "Improving" },
+    "HOLD→SELL": { arrow: "→", from: "#b45309", to: "#b91c1c", bg: "#fff1f2", border: "#fecaca", label: "Worsened" },
+  };
+
+  return (
+    <div style={{ background: "#fff", border: "0.5px solid #e5e7eb", borderRadius: 10, padding: 16, marginBottom: 16 }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+        <div style={{ fontSize: 11, fontWeight: 500, textTransform: "uppercase", letterSpacing: "1px", color: "#9ca3af" }}>Call Switch</div>
+        <span style={{ fontSize: 11, background: "#f3f4f6", color: "#6b7280", padding: "2px 8px", borderRadius: 10 }}>{switches.length} change{switches.length > 1 ? "s" : ""} today</span>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {switches.map((sw, i) => {
+          const key = `${sw.from}→${sw.to}`;
+          const cfg = arrowMap[key] || { from: "#6b7280", to: "#6b7280", bg: "#f9fafb", border: "#e5e7eb", label: "Changed" };
+          return (
+            <div key={i} style={{ background: cfg.bg, border: `0.5px solid ${cfg.border}`, borderRadius: 8, padding: "10px 14px", display: "flex", alignItems: "flex-start", gap: 12 }}>
+              <div style={{ flexShrink: 0, display: "flex", alignItems: "center", gap: 6, marginTop: 1 }}>
+                <span style={{ fontSize: 11, fontWeight: 500, color: cfg.from, background: "rgba(255,255,255,0.8)", padding: "1px 7px", borderRadius: 4 }}>{sw.from}</span>
+                <span style={{ fontSize: 12, color: "#9ca3af" }}>→</span>
+                <span style={{ fontSize: 11, fontWeight: 500, color: cfg.to, background: "rgba(255,255,255,0.8)", padding: "1px 7px", borderRadius: 4 }}>{sw.to}</span>
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 6, flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 13, fontWeight: 500, color: "#111827" }}>{sw.name}</span>
+                  <span style={{ fontSize: 10, color: "#9ca3af" }}>{sw.nse}</span>
+                  <span style={{ fontSize: 10, background: "rgba(255,255,255,0.8)", color: cfg.to, padding: "1px 6px", borderRadius: 3, fontWeight: 500 }}>{cfg.label}</span>
+                </div>
+                <div style={{ fontSize: 12, color: "#6b7280", marginTop: 3, lineHeight: 1.5 }}>{sw.reason}</div>
+              </div>
+              {sw.score_change && (
+                <div style={{ flexShrink: 0, textAlign: "right" }}>
+                  <div style={{ fontSize: 11, color: "#9ca3af" }}>Score</div>
+                  <div style={{ fontSize: 12, fontWeight: 500, color: sw.score_change > 0 ? "#15803d" : "#b91c1c" }}>
+                    {sw.score_change > 0 ? "+" : ""}{sw.score_change}
+                  </div>
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Top 15 Picks Component ───────────────────────────────────────────────────
+function Top15Section({ stocks, totalBuyScore }) {
+  const top15 = stocks.slice(0, 15);
+  const thStyle = (color) => ({
+    textAlign: "left", padding: "9px 8px", fontSize: 11, fontWeight: 500,
+    color: color || "#9ca3af", whiteSpace: "nowrap",
+    background: "#fafafa", borderBottom: "0.5px solid #e5e7eb",
+  });
+
+  return (
+    <div style={{ background: "#fff", border: "0.5px solid #e5e7eb", borderRadius: 10, overflow: "hidden", marginBottom: 16 }}>
+      <div style={{ padding: "14px 16px 10px", display: "flex", alignItems: "center", justifyContent: "space-between", borderBottom: "0.5px solid #f3f4f6" }}>
+        <div>
+          <div style={{ fontSize: 13, fontWeight: 500, color: "#111827" }}>Today's Top 15 Picks</div>
+          <div style={{ fontSize: 11, color: "#9ca3af", marginTop: 2 }}>Highest composite scores across all 4 analyses · Sorted by conviction</div>
+        </div>
+        <span style={{ fontSize: 11, background: "#f0fdf4", color: "#15803d", padding: "3px 10px", borderRadius: 10, fontWeight: 500, border: "0.5px solid #bbf7d0" }}>Top 15</span>
+      </div>
+      <div style={{ overflowX: "auto" }}>
+        <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12 }}>
+          <thead>
+            <tr>
+              <th style={thStyle()}>#</th>
+              <th style={thStyle()}>Stock</th>
+              <th style={thStyle()}>CMP</th>
+              <th style={thStyle(SC.tf)}>TF</th>
+              <th style={thStyle(SC.mom)}>MOM</th>
+              <th style={thStyle(SC.ha)}>HA</th>
+              <th style={thStyle(SC.ichi)}>ICHI</th>
+              <th style={thStyle()}>Score</th>
+              <th style={thStyle()}>Signal</th>
+              <th style={thStyle()}>Entry</th>
+              <th style={thStyle()}>Target</th>
+              <th style={thStyle()}>SL</th>
+              <th style={thStyle()}>ETA</th>
+              <th style={thStyle()}>Alloc%</th>
+            </tr>
+          </thead>
+          <tbody>
+            {top15.map((s, i) => {
+              const isBuy = s.sc.rec === "BUY";
+              const alloc = isBuy && totalBuyScore > 0 ? ((s.sc.total / totalBuyScore) * 100).toFixed(1) + "%" : "—";
+              const scoreColor = s.sc.total >= 75 ? "#15803d" : s.sc.total >= 60 ? "#16a34a" : s.sc.total >= 50 ? "#b45309" : "#4338ca";
+              const scoreBg   = s.sc.total >= 75 ? "#f0fdf4" : s.sc.total >= 60 ? "#f0fdf4" : s.sc.total >= 50 ? "#fffbeb" : "#eef2ff";
+              return (
+                <tr key={s.nse} style={{ borderBottom: "0.5px solid #f3f4f6" }}
+                  onMouseEnter={e => e.currentTarget.style.background = "#fafafa"}
+                  onMouseLeave={e => e.currentTarget.style.background = ""}>
+                  <td style={{ padding: "9px 8px", fontWeight: 500, color: i < 3 ? "#111827" : "#9ca3af", fontSize: i < 3 ? 13 : 12 }}>{i + 1}</td>
+                  <td style={{ padding: "9px 8px" }}>
+                    <div style={{ fontWeight: 500, color: "#111827" }}>{s.name}</div>
+                    <div style={{ fontSize: 10, color: "#9ca3af" }}>{s.nse} · {s.group}</div>
+                  </td>
+                  <td style={{ padding: "9px 8px", fontWeight: 500, whiteSpace: "nowrap" }}>₹{fmt(s.cmp)}</td>
+                  <td style={{ padding: "9px 8px", color: SC.tf,   fontWeight: 500 }}>{s.sc.tf}</td>
+                  <td style={{ padding: "9px 8px", color: SC.mom,  fontWeight: 500 }}>{s.sc.mom}</td>
+                  <td style={{ padding: "9px 8px", color: SC.ha,   fontWeight: 500 }}>{s.sc.ha}</td>
+                  <td style={{ padding: "9px 8px", color: SC.ichi, fontWeight: 500 }}>{s.sc.ichi}</td>
+                  <td style={{ padding: "9px 8px" }}>
+                    <span style={{ background: scoreBg, color: scoreColor, padding: "3px 9px", borderRadius: 5, fontSize: 12, fontWeight: 500 }}>{s.sc.total}</span>
+                  </td>
+                  <td style={{ padding: "9px 8px" }}><RecBadge rec={s.sc.rec} /></td>
+                  <td style={{ padding: "9px 8px", fontSize: 11, color: "#15803d", whiteSpace: "nowrap" }}>{isBuy ? `₹${fmt(s.sc.entry)}` : "—"}</td>
+                  <td style={{ padding: "9px 8px", fontSize: 11, color: "#1d4ed8", whiteSpace: "nowrap" }}>{isBuy ? `₹${fmt(s.sc.target)}` : "—"}</td>
+                  <td style={{ padding: "9px 8px", fontSize: 11, color: "#b91c1c", whiteSpace: "nowrap" }}>{isBuy ? `₹${fmt(s.sc.stop_loss)}` : "—"}</td>
+                  <td style={{ padding: "9px 8px", fontSize: 11, color: "#6b7280" }}>{isBuy ? s.sc.eta : "—"}</td>
+                  <td style={{ padding: "9px 8px", fontSize: 11, fontWeight: 500, color: "#1d4ed8" }}>{alloc}</td>
+                </tr>
+              );
+            })}
+          </tbody>
+        </table>
+      </div>
+    </div>
+  );
+}
+
 export default function App() {
   const [rawData, setRawData]   = useState(null);
   const [loading, setLoading]   = useState(true);
   const [error, setError]       = useState(null);
-  const [tab, setTab]           = useState("summary");
+  const [tab, setTab]           = useState("today");
   const [expanded, setExpanded] = useState(null);
   const [lastFetch, setLastFetch] = useState(null);
 
@@ -396,6 +534,7 @@ export default function App() {
   const [sentBg, sentColor] = sentMap[rawData?.sentiment] || sentMap.Neutral;
 
   const TABS = [
+    { id: "today",   label: "Today's Picks" },
     { id: "summary", label: "Summary" },
     { id: "buy",     label: `Buy (${buys.length})` },
     { id: "sell",    label: `Sell (${sells.length})` },
@@ -447,6 +586,14 @@ export default function App() {
             }}>{t.label}</button>
           ))}
         </div>
+
+        {/* Today's Picks */}
+        {tab === "today" && (
+          <>
+            <Top15Section stocks={stocks} totalBuyScore={totalBuyScore} />
+            <CallSwitchSection switches={rawData?.call_switches || []} />
+          </>
+        )}
 
         {/* Summary */}
         {tab === "summary" && (
